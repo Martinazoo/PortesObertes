@@ -19,6 +19,7 @@
                     pydantic
                     pyserial
                     requests
+                    bcrypt
                 ];
 
                 dev_tools = with pkgs.python312Packages; [

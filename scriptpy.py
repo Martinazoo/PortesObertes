@@ -18,11 +18,13 @@ def read_data():
     try:
         while True:
             uuid = ser.readline().decode('utf-8').strip()
-            if uuid:
-                print(uuid)
-                response = requests.post(api_url, json={"uuid": uuid})
+            uuid_str = str(uuid)
+            if uuid_str:
+                print(uuid_str)
+                object = {'uuid': uuid_str}
+                response = requests.post(api_url, json = object)
                 if response.status_code == 200:
-                   print(f"UUID guardat: {uuid}")
+                   print(f"UUID guardat: {uuid_str}")
                 else:
                    print(f"Hi ha algun error: {response.text}")
     except KeyboardInterrupt:
@@ -33,3 +35,5 @@ def read_data():
         
 
 read_data()
+
+#Fer crida a la bbdd i depen de si esta a la base de dades o no fer una cosa o una altra
