@@ -19,6 +19,7 @@ def read_data():
         while True:
             uuid = ser.readline().decode('utf-8').strip()
             if uuid:
+                print(uuid)
                 response = requests.post(api_url, json={"uuid": uuid})
                 if response.status_code == 200:
                     print(f"UUID guardat: {uuid}")
