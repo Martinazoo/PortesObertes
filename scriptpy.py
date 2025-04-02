@@ -20,11 +20,11 @@ def read_data():
             uuid = ser.readline().decode('utf-8').strip()
             if uuid:
                 print(uuid)
-                response = requests.post(api_url, json={"uuid": uuid})
-                if response.status_code == 200:
-                    print(f"UUID guardat: {uuid}")
-                else:
-                    print(f"Hi ha algun error: {response.text}")
+                #response = requests.post(api_url, json={"uuid": uuid})
+                #if response.status_code == 200:
+                 #   print(f"UUID guardat: {uuid}")
+                #else:
+                 #   print(f"Hi ha algun error: {response.text}")
     except KeyboardInterrupt:
         print("Finalitzat per l'usuari")
     finally:
