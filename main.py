@@ -60,17 +60,20 @@ def on_startup():
 async def get_uuid(uuid_data: NFCUuid, session: SessionDep):
     statement = select(NFCDB).where(NFCDB.uuid == uuid_data.uuid)
     res = session.exec(statement).first()
-    if res.uuid and res.email is None:
-        print(f"Card is not assigned UUID:{uuid_data.uuid}")
-        raise HTTPException(status_code=422, detail="assign the card")
-    elif res.uuid and res.email:
-        print(f"You're {res.email}")
-        return res.model_dump()
-        
-    else:
+    Uuid = res.uuid
+    Email = res.email
+    if res is None:
         db_nfc = NFCDB(uuid=uuid_data.uuid, email=None)
         session.add(db_nfc)
         session.commit()
+        return
+    elif Uuid and Email:
+        print(f"You're {Email}")
+        return res.model_dump() 
+    else:
+        print(Uuid)
+        raise HTTPException(status_code=404, detail="NFC not asigner")
+        
         
 @app.post("/whoamI")
 async def who_am_i(nfc: NFCUuid, session: SessionDep):
