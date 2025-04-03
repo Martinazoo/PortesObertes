@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Depends, HTTPException
 from pydantic import BaseModel
-from sqlmodel import Field, Session, SQLModel, create_engine, select
+from sqlmodel import Field, Session, SQLModel, create_engine, select, update
 from typing import Annotated
 import bcrypt
 
@@ -8,7 +8,8 @@ import time
 
 
 app = FastAPI()
-
+class UserEmail(BaseModel):
+    email: str
 class NFCUuid(BaseModel):
     uuid: str
 
@@ -52,7 +53,6 @@ def create_db_and_tables():
 def on_startup():
     create_db_and_tables()
     
-loggedinuser = None
 
 # if loggedinuser is none raise httpexception 422 
 
@@ -60,35 +60,61 @@ loggedinuser = None
 async def get_uuid(uuid_data: NFCUuid, session: SessionDep):
     statement = select(NFCDB).where(NFCDB.uuid == uuid_data.uuid)
     res = session.exec(statement).first()
-    if res is None:
+    if res.uuid and res.email is None:
+        raise HTTPException(status_code=422, detail="assign the card")
+    elif res.uuid and res.email:
+        return res.model_dump()
+        
+    else:
         db_nfc = NFCDB(uuid=uuid_data.uuid, email=None)
         session.add(db_nfc)
         session.commit()
+        
+@app.post("/whoamI")
+async def who_am_i(nfc: NFCUuid, session: SessionDep):
+    statement_nfc = select(NFCDB).where(NFCDB.uuid == nfc.uuid)
+    db_nfc = session.exec(statement_nfc).first()
+    
+    if db_nfc:
+        return db_nfc.model_dump()
     else:
-        raise HTTPException(status_code=404, detail="The card exists assign it to a person") 
-        
-        
- #Modificar esta funcio   
-@app.post("/register_nfc")   
-async def register_nfc(email: NFCId, session: SessionDep):
-    statement = select(UserDB).where(UserDB.email == email.email)
-    user = session.exec(statement).first()
-    if user:
-        statement_nfc = select(NFCDB).where(NFCDB.email == email.email)
-        db_nfc = session.exec(statement_nfc).first()
-        
-        if db_nfc:
-            db_nfc.uuid = email.uuid  # Actualiza el UUID
-        else:
-            db_nfc = NFCDB(uuid=email.uuid, email=email.email)  # Crea nuevo si no existe
-            session.add(db_nfc)
-        
-        session.commit()
-    else:
-        raise HTTPException(status_code=404, detail="Email doesn't exist")
+        raise HTTPException(status_code=404, detail="NFC not found")
 
         
-        
+    
+@app.post("/assignnfc")
+async def assign_nfc_to_email(nfc: NFCUuid, user: UserEmail, session: SessionDep):
+    
+    statement_user = select(UserDB).where(UserDB.email == user.email)
+    db_user = session.exec(statement_user).first()
+
+    if not db_user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    statement_nfc = select(NFCDB).where(NFCDB.uuid == nfc.uuid)
+    db_nfc = session.exec(statement_nfc).first()
+    
+    if not db_nfc:
+        raise HTTPException(status_code=404, detail="NFC not found")
+
+    statement_exist = select(NFCDB).where(
+        (NFCDB.email == user.email) & (NFCDB.uuid == nfc.uuid)
+    )
+    db_exist = session.exec(statement_exist).first()
+
+    if db_exist:
+        raise HTTPException(status_code=400, detail="NFC already assigned to the user")
+    statement_update = update(NFCDB).where(NFCDB.uuid == nfc.uuid).values(email=user.email)
+    result = session.exec(statement_update)
+
+    if result:
+        session.commit() 
+        session.refresh(db_nfc)
+        return {"message": "NFC assigned successfully", "nfc": db_nfc}
+    else:
+        raise HTTPException(status_code=404, detail="Failed to assign NFC")
+    
+    
 @app.post("/register")
 async def register(user: UserRegister, session: SessionDep):
     u = get_user(user.email, session)
@@ -107,6 +133,7 @@ async def login(user: UserLogin, session: SessionDep):
     if u:
         if check_password(user.password, u.password):
             loggedinuser = user.email
+            print(loggedinuser)
             return {"message": "User logged in", "email": user.email}
         else:
             raise HTTPException(status_code=401, detail="Invalid password")
@@ -128,6 +155,10 @@ async def get_all_nfc(session: SessionDep):
     
 def get_user(email: str, session: SessionDep):
     statement = select(UserDB).where(UserDB.email == email)
+    return session.exec(statement).first()
+
+def get_uuid(uuid: str, session: SessionDep):
+    statement = select(NFCUuid).where(NFCUuid.uuid == uuid)
     return session.exec(statement).first()
 
 def hash_password(password: str) -> str:
