@@ -52,7 +52,9 @@ def create_db_and_tables():
 def on_startup():
     create_db_and_tables()
     
-    
+loggedinuser = None
+
+# if loggedinuser is none raise httpexception 422 
 
 @app.post("/uuid_save")
 async def get_uuid(uuid_data: NFCUuid, session: SessionDep):
@@ -98,11 +100,13 @@ async def register(user: UserRegister, session: SessionDep):
         return {"message": "User registered", "username": user.username}
     else:
         raise HTTPException(status_code=400, detail="Email already exists")
+    
 @app.post("/login")
 async def login(user: UserLogin, session: SessionDep):
     u = get_user(user.email, session)
     if u:
         if check_password(user.password, u.password):
+            loggedinuser = user.email
             return {"message": "User logged in", "email": user.email}
         else:
             raise HTTPException(status_code=401, detail="Invalid password")
