@@ -23,10 +23,8 @@ def read_data():
                 print(uuid_str)
                 object = {'uuid': uuid_str}
                 response = requests.post(api_url, json = object)
-                print(response)
                 if response.status_code == 200:
                    print(f"UUID guardat: {uuid_str}")
-                   ser.write('a')
                 else:
                    print(f"Hi ha algun error: {response.text}")
     except KeyboardInterrupt:
