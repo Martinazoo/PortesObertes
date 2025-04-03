@@ -60,18 +60,16 @@ def on_startup():
 async def get_uuid(uuid_data: NFCUuid, session: SessionDep):
     statement = select(NFCDB).where(NFCDB.uuid == uuid_data.uuid)
     res = session.exec(statement).first()
-    Uuid = res.uuid
-    Email = res.email
     if res is None:
         db_nfc = NFCDB(uuid=uuid_data.uuid, email=None)
         session.add(db_nfc)
         session.commit()
         return
-    elif Uuid and Email:
-        print(f"You're {Email}")
+    elif res.uuid and res.email:
+        print(f"You're {res.email}")
         return res.model_dump() 
     else:
-        print(Uuid)
+        print(res.uuid)
         raise HTTPException(status_code=404, detail="NFC not asigner")
         
         
