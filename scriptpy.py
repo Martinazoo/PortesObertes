@@ -27,10 +27,10 @@ def read_data():
                 if response.status_code == 200:
                     print(f"UUID guardado: {uuid_str}")
                     print(response)
-                    ser.write((response + "\n").encode())
+                    ser.write((response).encode())
                 else:
                     print(f"Hubo algún error: {response.text}")
-                    ser.write((response + "\n").encode())
+                    ser.write((response).encode())
                     print(response)
                     
     except KeyboardInterrupt:
