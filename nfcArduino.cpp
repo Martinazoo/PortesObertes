@@ -51,11 +51,11 @@ void loop() {
       } 
       Serial.println();
       mfrc522.PICC_HaltA();  
-      if (Serial.available()){
-        String response = Serial.readStringUntil('\n');
-        Serial.print("Respuesta de la Raspi: ");
-        Serial.println(response);
-      }
+      //if (Serial.available()){
+        //String response = Serial.readStringUntil('\n');
+        //Serial.print("Respuesta de la Raspi: ");
+        //Serial.println(response);
+      //}
     }
       // Aquí suena la intro de Mario Bros
       playMarioIntro();
