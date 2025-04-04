@@ -19,6 +19,7 @@ void setup() {
 void loop() {
   if (mfrc522.PICC_IsNewCardPresent()) {  
     if (mfrc522.PICC_ReadCardSerial()) {
+      //Serial print para connectarme con la raspi 
       digitalWrite(LED_PIN, HIGH);
       for (byte i = 0; i < mfrc522.uid.size; i++) {
         Serial.print(mfrc522.uid.uidByte[i] < 0x10 ? " 0" : " ");
@@ -42,3 +43,4 @@ void loop() {
   
   digitalWrite(LED_PIN, LOW);
 }
+//Funcion lectura de NFCID i otra para obtener la respuesta 
