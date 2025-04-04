@@ -26,10 +26,12 @@ def read_data():
                 response = requests.post(api_url, json=data)
                 if response.status_code == 200:
                     print(f"UUID guardado: {uuid_str}")
+                    print(response)
                     ser.write((response + "\n").encode())
                 else:
                     print(f"Hubo algún error: {response.text}")
                     ser.write((response + "\n").encode())
+                    print(response)
                     
     except KeyboardInterrupt:
         print("Finalizado por el usuario")
