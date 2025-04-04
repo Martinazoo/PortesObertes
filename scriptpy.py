@@ -30,6 +30,7 @@ def read_data():
                     #ser.write((response).encode())
                 else:
                     print(f"Hubo algún error: {response.text}")
+                    print(response.status_code)
                     #ser.write((response).encode())
                     #print(response)
                     
